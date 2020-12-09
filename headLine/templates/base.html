@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ECS639 CW3</title>
+    <link rel="stylesheet" href={% static 'css/bootstrap/bootstrap.css' %}>
+    <link rel="stylesheet" href={% static 'css/datepicker/bootstrap-datepicker.css' %}>
+    <link rel="stylesheet" href={% static 'css/custom.css' %}>
+</head>
+<body>
+<nav class="navbar navbar-dark bg-dark">
+    <div class="row justify-content-between vw-100">
+        <div class="col-auto">
+            <a class="navbar-brand" href="#">ECS639 CW3 News App</a>
+        </div>
+        <div class="col-auto">
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'headline:logout' %}" class="button btn btn-light border-light">Logout</a>
+            {% endif %}
+        </div>
+    </div>
+
+</nav>
+<div class="container p-3 m-3 vw-100" id="navbarSpacer"></div>
+
+<div class="container">
+
+    {% block body %}
+    {% endblock %}
+
+</div>
+
+</body>
+<script src={% static 'js/jquery/jquery-3.5.1.js' %}></script>
+<script src={% static 'js/bootstrap/bootstrap.js' %}></script>
+<script src={% static 'js/datepicker/bootstrap-datepicker.js' %}></script>
+<script src={% static 'js/custom.js' %}></script>
+</html>

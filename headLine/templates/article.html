@@ -1,0 +1,376 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_filters %}
+
+{% block body %}
+    <div class="container">
+        <div class="row justify-content-between">
+            <div class="col-auto">
+                <a class="btn btn-danger" href="{% url "headline:home" %}">Go Back</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <hr>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <p class="h1" id="article-title"></p>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <p class="p" id="article-body"></p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <hr>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <p class="h2">Comments</p>
+            </div>
+        </div>
+
+
+        <div class="row justify-content-center">
+            <div class="col-10">
+                <textarea class="form-control" rows="4" placeholder="Enter Your Comment!"
+                          id="top-level-comment-input"></textarea>
+            </div>
+            <div class="col-2">
+                <a class="btn btn-success" onclick="createNewToplevelCommentHandler(this)">Submit!</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <hr>
+            </div>
+        </div>
+        <div class="comment-container">
+
+        </div>
+        <div hidden id="templateContainer">
+            <div class="row border border-dark bg-light p-1 m-1" id="topLevelCommentBoxTemplate">
+                <div class="col-12">
+                    <div class="row">
+                        <div class="col-auto">
+                            <h3 id="user-says">User123 Says:</h3>
+                        </div>
+                    </div>
+                    <div class="row" id="content-row-template">
+                        <div class="col-auto offset-1">
+                            <p id="comment-template-text">Template</p>
+                        </div>
+                    </div>
+                    <div class="row" id="edit-row-template" hidden>
+                        <div class="col-10">
+                <textarea class="form-control" rows="4" placeholder="Edit Your Comment!"
+                          id="edit-comment-input"></textarea>
+                        </div>
+                        <div class="col-2">
+                            <div class="row">
+                                <a class="btn btn-danger app-btn" onclick="cancelEditButtonHandler(this)">Cancel</a>
+                            </div>
+                            <div class="row">
+                                <a class="btn btn-success app-btn"
+                                   onclick="editCommentHandler(this)">Submit!</a>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <hr>
+                        </div>
+                    </div>
+
+                    <div class="row" id="reply-row-template" hidden>
+                        <div class="col-10">
+                <textarea class="form-control" rows="4" placeholder="Enter Your Reply!"
+                          id="child-comment-input"></textarea>
+                        </div>
+                        <div class="col-2">
+                            <div class="row">
+                                <a class="btn btn-danger app-btn" onclick="cancelChildCommentHandler(this)">Cancel</a>
+                            </div>
+                            <div class="row">
+                                <a class="btn btn-success app-btn"
+                                   onclick="createNewChildCommentHandler(this)">Submit!</a>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="row justify-content-end" id="btn-row-template">
+                        <div class="col-auto">
+                            <button class="btn btn-danger comment-delete-btn app-btn"
+                                    onclick="deleteCommentHandler(this)">Delete
+                            </button>
+                        </div>
+                        <div class="col-auto">
+                            <button class="btn btn-info comment-edit-btn app-btn" onclick="editButtonHandler(this)">
+                                Edit
+                            </button>
+                        </div>
+                        <div class="col-auto">
+                            <button class="btn btn-success comment-reply-btn app-btn"
+                                    onclick="replyButtonHandler(this)">Reply
+                            </button>
+                        </div>
+                        <div class="col-1">
+                            <p id="comment-id"></p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-11 offset-1" id="child-container">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script src={% static 'js/jquery/jquery-3.5.1.js' %}></script>
+    {{ user_data |json_script:"user_data" }}
+    {{ article_data |json_script:"article_data" }}
+    <script>
+        const userData = JSON.parse(document.getElementById('user_data').textContent);
+        const articleData = JSON.parse(document.getElementById('article_data').textContent);
+        let article;
+        let comments = [];
+        const articleUrl = ("{% url 'headline:article_view_single' '999'%}").replace('999', articleData.id)
+        const commentSingleBaseUrl = ("{% url 'headline:comment_view_single' '999'%}")
+        const commentAllBaseUrl = "{% url 'headline:comment_view_all' %}"
+        const userUrl = ("{% url 'headline:user_view_single' '999'%}")
+
+        const articleLoadedHandler = (data) => {
+            console.log("Article Loaded")
+            article = data
+            articleRenderer()
+            loadComments()
+        }
+
+
+        const articleRenderer = () => {
+            $('#article-title').text(article.article_title)
+            $('#article-body').text(article.article_body)
+
+        }
+
+        editButtonHandler = (event) => {
+            const commentId = event.value
+            const parentContainerId = ("comment" + commentId + "Container")
+            console.log($(`#${parentContainerId} #comment-text`).text())
+            $(`#${parentContainerId} #edit-row-${commentId} textarea`).val($(`#${parentContainerId} #comment-${commentId}-text`).text())
+            $(`#${parentContainerId} #edit-row-${commentId}`).attr('hidden', false)
+
+
+            $(`#${parentContainerId} #btn-row-${commentId}`).attr('hidden', true)
+            $(`#${parentContainerId} #content-row-${commentId}`).attr('hidden', true)
+
+        }
+
+        cancelEditButtonHandler = (event) => {
+            const commentId = event.value
+            const parentContainerId = ("comment" + commentId + "Container")
+            $(`#${parentContainerId} #edit-row-${commentId}`).attr('hidden', true).val('')
+
+
+            $(`#${parentContainerId} #btn-row-${commentId}`).attr('hidden', false)
+            $(`#${parentContainerId} #content-row-${commentId}`).attr('hidden', false)
+        }
+
+
+        const replyButtonHandler = (event) => {
+            const commentId = event.value
+            const parentContainerId = ("comment" + commentId + "Container")
+            console.log(`Reply button clicked, parentId is ` + parentContainerId)
+
+            $(`#${parentContainerId} #reply-row-${commentId}`).attr('hidden', false)
+            $(`#${parentContainerId} #btn-row-${commentId}`).attr('hidden', true)
+
+        }
+        const cancelChildCommentHandler = (event) => {
+            const commentId = event.value
+            const parentContainerId = ("comment" + commentId + "Container")
+            console.log(`Cancel button clicked, parentId is ` + parentContainerId)
+
+            $(`#${parentContainerId} #reply-row-${commentId}`).attr('hidden', true).val('')
+            $(`#${parentContainerId} #btn-row-${commentId}`).attr('hidden', false)
+        }
+
+        const renderComment = async (comment) => {
+            const newId = ("comment" + comment.id + "Container")
+            const template = $("#topLevelCommentBoxTemplate").clone().attr("id", newId)
+            template.find('#comment-template-text').text(comment.body)
+            template.find('#reply-row-template').attr('id', `reply-row-${comment.id}`)
+            template.find('#edit-row-template').attr('id', `edit-row-${comment.id}`)
+            template.find('#btn-row-template').attr('id', `btn-row-${comment.id}`)
+            template.find('#content-row-template').attr('id', `content-row-${comment.id}`)
+            template.find('#comment-template-text').attr('id', `comment-${comment.id}-text`)
+            template.find('#comment-id').text(`ID#: ${comment.id}`)
+            template.find('#user-says').text(`${(await getUser(comment.user)).first_name || `Unknown`} Says:`)
+            template.find('.app-btn').val(comment.id)
+
+            if (comment.user !== userData) {
+                console.log("Foreign Comment!")
+                template.find('.comment-delete-btn').remove()
+                template.find('.comment-edit-btn').remove()
+            }
+
+
+            const childComments = comments.filter((childComment) => comment.child_comments.includes(childComment.id))
+            console.log(`We have ${childComments.length} comments to render`)
+
+            const childTemplates = await Promise.all(childComments.map(async comment => {
+                return (await renderComment(comment))
+            }))
+
+            console.log(childTemplates)
+
+            template.find('#child-container').append(childTemplates)
+
+            return template
+
+        }
+
+
+        const commentRenderer = async () => {
+            console.log(`Comment Renderer Called`)
+            $('.comment-container').empty()
+
+            for (const comment1 of comments.filter(comment => comment.parent_comment == null)) {
+                console.log(`Rendering Comment ${comment1.id}`)
+                const template = await renderComment(comment1)
+                $('.comment-container').append(template)
+            }
+        }
+
+
+        const loadArticle = () => {
+            $.ajax({
+                url: articleUrl,
+                success: articleLoadedHandler,
+                dataType: 'json',
+                method: 'GET'
+            })
+        }
+
+
+        const commentsLoadedHandler = (data) => {
+            console.log(`CommentLoadedHandlerCalled`)
+            comments.push(data)
+
+        }
+
+
+        const loadComments = async () => {
+            comments = []
+            console.log(`LoadComments Called`)
+            const commentPromises = article.comments.map(async (commentId) => {
+                const commentUrl = commentSingleBaseUrl.replace('999', commentId)
+                return $.ajax({
+                    url: commentUrl,
+                    dataType: 'json',
+                    method: 'GET'
+                })
+            })
+            comments = await Promise.all(commentPromises)
+            commentRenderer()
+        }
+
+        const createNewChildCommentHandler = (event) => {
+            const parentContainerId = ("comment" + event.value + "Container")
+            console.log(`Q selector is :` + parentContainerId + ' #child-comment-input')
+            const comment = $('#' + parentContainerId + ' #child-comment-input').val()
+            submitComment(comment, event.value)
+        }
+
+        const createNewToplevelCommentHandler = (event) => {
+            const comment = $('#top-level-comment-input').val()
+            submitComment(comment, null)
+            $('#top-level-comment-input').val('')
+            console.log(comment)
+        }
+
+        const deleteCommentHandler = (event) => {
+            deleteComment(event.value)
+        }
+
+        deleteComment = async (commentId) => {
+            await $.ajax({
+                url: commentSingleBaseUrl.replace('999', commentId),
+                contentType: "application/json",
+                headers: {"X-CSRFToken": '{{ csrf_token }}'},
+                method: 'DELETE'
+            })
+            loadArticle()
+        }
+
+        const submitComment = async (commentText, parentComment) => {
+            const comment = {
+                child_comments: [],
+                article: article.id,
+                user: userData,
+                body: commentText,
+                parent_comment: parentComment ? parentComment : null
+            }
+            console.log('Sending Comment')
+            await $.ajax({
+                url: commentAllBaseUrl,
+                contentType: "application/json",
+                headers: {"X-CSRFToken": '{{ csrf_token }}'},
+                data: JSON.stringify(comment),
+                method: 'POST'
+            })
+            console.log('Comment Sent!')
+            await loadArticle()
+            console.log('Await Completed!')
+
+        }
+
+        const editCommentHandler = (event) => {
+            const commentId = event.value
+            const parentContainerId = ("comment" + commentId + "Container")
+            const commentText = $(`#${parentContainerId} #edit-row-${commentId} textarea`).val()
+            editComment(commentId, commentText)
+        }
+
+        const editComment = async (commentId, commentText) => {
+            console.log(commentId)
+            const comment = comments.find(elem => +elem.id === +commentId)
+            console.log(comment)
+            comment.body = commentText
+            console.log('Sending Comment')
+            await $.ajax({
+                url: commentSingleBaseUrl.replace('999', comment.id),
+                contentType: "application/json",
+                headers: {"X-CSRFToken": '{{ csrf_token }}'},
+                data: JSON.stringify(comment),
+                method: 'PUT'
+            })
+            console.log('Comment Sent!')
+            await loadArticle()
+            console.log('Await Completed!')
+
+        }
+
+        const getUser = async (userId) => {
+            return $.ajax({
+                url: userUrl.replace('999', userId),
+                dataType: 'json',
+                method: 'GET'
+            })
+        }
+
+
+        $(document).ready(() => {
+            loadArticle()
+        })
+    </script>
+{% endblock %}

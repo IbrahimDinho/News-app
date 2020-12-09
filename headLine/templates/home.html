@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_filters %}
+
+{% block body %}
+    <div class="container">
+        <div class="row justify-content-end">
+            <div class="col-auto">
+                <a class="btn btn-info" href="{% url "headline:profile" %}">Edit My Profile</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <hr>
+            </div>
+        </div>
+        <div class="row">
+            <h1>Your Articles</h1>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <hr>
+            </div>
+        </div>
+
+        <div id="article_container">
+
+        </div>
+
+
+    </div>
+
+    <div class="row border border-dark bg-light rounded-2 m-1 p-1" id="template">
+        <div class="col-8">
+            <a id="article_title" class="h2" href="#">TEMPLATE</a>
+            <p id="article_body">TEMPLATE</p>
+        </div>
+        <div class="col-4">
+            <div class="row justify-content-center h-100">
+                <div class="col-auto d-flex align-items-center">
+
+                    <button class="btn btn-success"
+                            onclick="likeArticleHandler(this)"
+                    >Like!
+                    </button>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <script src={% static 'js/jquery/jquery-3.5.1.js' %}></script>
+    {{ userData |json_script:"user_data" }}
+    <script>
+        const userData = JSON.parse(document.getElementById('user_data').textContent);
+        const userId = userData.userId
+        let loadedArticles = []
+        const allArticleUrl = "{% url "headline:article_view_all" %}"
+        const loadArticles = () => {
+            $('#article_container').empty()
+            loadedArticles = []
+            $.ajax({
+                url: allArticleUrl,
+                success: articleLoadedHandler,
+                dataType: 'json',
+                method: 'GET'
+            })
+        }
+        const articleLoadedHandler = (articles) => {
+            loadedArticles = articles
+            console.log("We have new data")
+            userData.selectedCategories.forEach(category => {
+                console.log("Reading out Category " + category.id)
+                const targetArticles = articles.filter(elem => elem.category === category.id);
+                console.log("This category has " + targetArticles.length + " articles")
+                if (targetArticles.length !== 0) {
+                    $('#article_container').append("<p class='h2'>" + category.name + " </p>")
+                }
+                targetArticles.forEach(article => {
+                    const newId = ("article" + article.id + "block")
+                    const template = $("#template").clone().attr("id", newId).hide()
+                    $('#article_container').append(template)
+
+                    $("#" + newId + " a").text(article.article_title).attr("href", ("{% url "headline:article" '999' %}").replace('999', article.id))
+                    $("#" + newId + " p").text(article.article_summary)
+
+                    const button = $("#" + newId + " button").val(article.id)
+                    if (article.liked_by.filter(elem => elem === userId).length) {
+                        button.removeClass('btn-success').addClass('btn-danger').text('Un-Like!')
+                    }
+                    $('#' + newId).show()
+                })
+
+            })
+
+
+        }
+
+        likeArticleHandler = (event) => {
+            console.log("LikeArticle button pressed!")
+
+            const article = loadedArticles.find(elem => elem.id === +event.value);
+
+            console.log("The article under modification is: " + article)
+            if (article.liked_by.filter(elem => elem === userId).length) {
+                console.log("This article is currently liked")
+                article.liked_by = article.liked_by.filter(elem => elem !== userId)
+
+            } else {
+                article.liked_by.push(userId)
+            }
+            console.log("Launching Ajax with data: " + JSON.stringify(article))
+            $.ajax({
+                contentType: "application/json",
+                headers: {"X-CSRFToken": '{{ csrf_token }}'},
+                data: JSON.stringify(article),
+                url: allArticleUrl + article.id,
+                success: articleChangeHandler,
+                method: 'PUT'
+            })
+
+        }
+        articleChangeHandler = () => {
+            loadArticles()
+        }
+
+        $(document).ready(() => {
+            $("#template").hide()
+            loadArticles()
+        })
+    </script>
+{% endblock %}
