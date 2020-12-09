@@ -32,7 +32,7 @@ class TestingArticleLike(StaticLiveServerTestCase):
     
     @override_settings(DEBUG=True)
     def testingArticleLike(self):
-        self.chrome.get(self.live_server_url+"/headline/login/")
+        self.chrome.get(self.live_server_url+"/login/")
         self.chrome.find_element_by_name("username").send_keys("testusername")
         self.chrome.find_element_by_name("password").send_keys("testpassword")
         time.sleep(0.5)
