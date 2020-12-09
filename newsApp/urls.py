@@ -22,5 +22,5 @@ from newsApp import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('headline/', include('headLine.urls'))
+    path('', include('headLine.urls'))
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
