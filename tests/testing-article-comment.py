@@ -16,6 +16,7 @@ import time
 from headLine.models import *
 
 class TestingArticleComment(StaticLiveServerTestCase):
+    #Set up Testing
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -31,21 +32,22 @@ class TestingArticleComment(StaticLiveServerTestCase):
         management.call_command('flush', verbosity=0, interactive=False)
         self._database_data()
 
-    
+    #Test by commenting then deleting that same comment.
     @override_settings(DEBUG=True)
-    def testingArticleLike(self):
+    def testingArticleComment(self):
+        #Login
         self.chrome.get(self.live_server_url+"/login/")
         self.chrome.find_element_by_name("username").send_keys("testusername")
         self.chrome.find_element_by_name("password").send_keys("testpassword")
-        self.chrome.find_element_by_css_selector(".btn-success").click()
+        login_button = self.chrome.find_element_by_id("login-button")
+        time.sleep(2)
+        login_button.click()
 
-        self.chrome.get(self.live_server_url+"")
-
+        #Write and submit comment
         time.sleep(5)
         article_link = self.chrome.find_element_by_id('article_title')
         assert article_link is not None
         article_link.click()
-
         time.sleep(5)
         input = self.chrome.find_element_by_css_selector(".form-control")
         input.send_keys("High-five! Very nice!")
@@ -54,14 +56,14 @@ class TestingArticleComment(StaticLiveServerTestCase):
         submit = "#comments-container .send"
         submit = self.chrome.find_element_by_link_text('Submit!')
         submit.click()
-
         time.sleep(5)
-        assert self.chrome.find_element_by_id('comment-1-text') is not None
+        
+        #Delete comment
+        self.chrome.find_element_by_css_selector(".btn.btn-danger.comment-delete-btn.app-btn").click()
+        time.sleep(5)
+        assert True
 
-    def is_url(self, url):
-        current_url = self.chrome.getCurrentUrl()
-        assert url == current_url
-
+    #Load data into Test database
     def _database_data(self):
         user = User.objects.create(
             id=1, 

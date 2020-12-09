@@ -16,7 +16,8 @@ import time
 from headLine.models import *
 import os
 
-class TestingArticleLike(StaticLiveServerTestCase):
+class TestingRegistration(StaticLiveServerTestCase):
+    #Set up Test
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -32,12 +33,14 @@ class TestingArticleLike(StaticLiveServerTestCase):
         management.call_command('flush', verbosity=0, interactive=False)
         self._database_data()
 
-    
+    #Test Registration
     @override_settings(DEBUG=True)
-    def testing_Login(self):
+    def testing_Register(self):
+        #Go to register page
         self.chrome.get(self.live_server_url+"/register/")
         time.sleep(2)
         
+        #Fill in Registration form
         user_field = self.chrome.find_element_by_name("username")
         user_password = self.chrome.find_element_by_name("password")
         user_email = self.chrome.find_element_by_name("email")
@@ -45,9 +48,6 @@ class TestingArticleLike(StaticLiveServerTestCase):
         user_lname = self.chrome.find_element_by_name("last_name")
         dob_field = self.chrome.find_element_by_name("date_of_birth")
         image_field = self.chrome.find_element_by_name("profile_photo")
-
-    
-
         user_field.send_keys("test_new_username")
         user_password.send_keys("testpassword")
         user_email.send_keys("ibby@yahoo.com")
@@ -57,11 +57,13 @@ class TestingArticleLike(StaticLiveServerTestCase):
         dob_field.send_keys("01012020")
         image_field.send_keys(os.path.abspath("media/uploads/cattest2.jpg"))
         time.sleep(2)
+        
+        #Submit registration form
         login_button = self.chrome.find_element_by_id("login-button")
         login_button.click()
         time.sleep(4)
 
-        
+    #Load test data into test database
     def _database_data(self):
         user = User.objects.create(
             id=1, 

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% load crispy_forms_tags %}
+{% load crispy_forms_filters %}
+
+
+
+{% block body %}
+	
+	<div class="limiter">
+
+		<div class="container-login100" style="background-image: url('/static/logitnT/images/bg-01.jpg');">
+
+			<div class="wrap-login100">
+				
+				 <form class="login100-form validate-form" action="{% url 'headline:login' %}" method=post>
+                        {% csrf_token %}
+					<span class="login100-form-logo">
+						<i class="zmdi zmdi-landscape"></i>
+					</span>
+
+					<span class="login100-form-title p-b-34 p-t-27">
+						Log in
+					</span>
+
+
+						{{ login_form | crispy }}
+
+
+
+					<div class="container-login100-form-btn">
+						<button type="submit" id="login-button" class="login100-form-btn">
+							Login
+						</button>
+
+					</div>
+						<div class="text-center p-t-90">
+						<a class="txt1" id="registration-button" href="{% url "headline:register" %}">
+							Don't have an account? Register here!
+						</a>
+					</div>
+
+				</form>
+			</div>
+		</div>
+	</div>
+	
+
+	<div id="dropDownSelect1"></div>
+	
+<!--===============================================================================================-->
+	<script src="static/loginT/vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script src="static/loginT/vendor/animsition/js/animsition.min.js"></script>
+<!--===============================================================================================-->
+	<script src="static/loginT/vendor/bootstrap/js/popper.js"></script>
+	<script src="static/loginT/vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<script src="static/loginT/vendor/select2/select2.min.js"></script>
+<!--===============================================================================================-->
+	<script src="static/loginT/vendor/daterangepicker/moment.min.js"></script>
+	<script src="static/loginT/vendor/daterangepicker/daterangepicker.js"></script>
+<!--===============================================================================================-->
+	<script src="static/loginT/vendor/countdowntime/countdowntime.js"></script>
+<!--===============================================================================================-->
+	<script src="js/main.js"></script>
+
+{% endblock %}

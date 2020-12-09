@@ -13,7 +13,8 @@ from django.test.utils import override_settings
 import time
 from headLine.models import *
 
-class TestingArticleLike(StaticLiveServerTestCase):
+class TestingLogin(StaticLiveServerTestCase):
+    #Set up testing
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -29,7 +30,7 @@ class TestingArticleLike(StaticLiveServerTestCase):
         management.call_command('flush', verbosity=0, interactive=False)
         self._database_data()
 
-    
+    #Test Login
     @override_settings(DEBUG=True)
     def testing_Login(self):
         self.chrome.get(self.live_server_url+"/login/")
@@ -43,7 +44,7 @@ class TestingArticleLike(StaticLiveServerTestCase):
         
     
 
-
+    #Load test data into test database
     def _database_data(self):
         user = User.objects.create(
             id=1, 

@@ -40,7 +40,7 @@ def register(request):
         base_form = BaseForm()
         profile_form = ProfileForm()
 
-    return render(request, 'registration.html', {'base_form': base_form, 'profile_form': profile_form})
+    return render(request, 'register1.html', {'base_form': base_form, 'profile_form': profile_form})
 
 
 def addArticle(request):
@@ -100,7 +100,7 @@ def login_user(request):
     else:
         login_form = LoginForm()
 
-    return render(request, 'login.html', {'login_form': login_form})
+    return render(request, 'login1.html', {'login_form': login_form})
 
 
 def logout_user(request):

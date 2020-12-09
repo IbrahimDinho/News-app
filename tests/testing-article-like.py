@@ -14,6 +14,7 @@ import time
 from headLine.models import *
 
 class TestingArticleLike(StaticLiveServerTestCase):
+    #Set up Test
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -29,22 +30,25 @@ class TestingArticleLike(StaticLiveServerTestCase):
         management.call_command('flush', verbosity=0, interactive=False)
         self._database_data()
 
-    
+    #Test by Liking an Article
     @override_settings(DEBUG=True)
     def testingArticleLike(self):
+        #Login
         self.chrome.get(self.live_server_url+"/login/")
         self.chrome.find_element_by_name("username").send_keys("testusername")
         self.chrome.find_element_by_name("password").send_keys("testpassword")
         time.sleep(0.5)
-        self.chrome.find_element_by_css_selector(".btn-success").click()
-
+        login_button = self.chrome.find_element_by_id("login-button")
+        login_button.click()
         time.sleep(3)
+
+        #Like an article
         self.chrome.find_element_by_css_selector(".btn-success").click()
         time.sleep(4)
-
+        #Check button is is liked
         assert self.chrome.find_element_by_css_selector(".btn-danger") is not None
 
-
+    #Load test Data
     def _database_data(self):
         user = User.objects.create(
             id=1, 
