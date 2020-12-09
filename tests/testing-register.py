@@ -35,7 +35,7 @@ class TestingArticleLike(StaticLiveServerTestCase):
     
     @override_settings(DEBUG=True)
     def testing_Login(self):
-        self.chrome.get(self.live_server_url+"/headline/register/")
+        self.chrome.get(self.live_server_url+"/register/")
         time.sleep(2)
         
         user_field = self.chrome.find_element_by_name("username")
