@@ -34,12 +34,12 @@ class TestingArticleComment(StaticLiveServerTestCase):
     
     @override_settings(DEBUG=True)
     def testingArticleLike(self):
-        self.chrome.get(self.live_server_url+"/headline/login/")
+        self.chrome.get(self.live_server_url+"/login/")
         self.chrome.find_element_by_name("username").send_keys("testusername")
         self.chrome.find_element_by_name("password").send_keys("testpassword")
         self.chrome.find_element_by_css_selector(".btn-success").click()
 
-        self.chrome.get(self.live_server_url+"/headline/home/")
+        self.chrome.get(self.live_server_url+"")
 
         time.sleep(5)
         article_link = self.chrome.find_element_by_id('article_title')
